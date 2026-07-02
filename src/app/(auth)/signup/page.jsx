@@ -38,7 +38,7 @@ export default function SignupPage() {
     }
 
     toast.success("Account created!");
-    router.push("/chat");
+    router.push("/login");
   };
 
   const handleGoogleSignIn = async () => {

@@ -1,5 +1,6 @@
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
         className={`${plusJakarta.variable} ${geistMono.variable} antialiased bg-background text-text`}
       >
         {children}
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
