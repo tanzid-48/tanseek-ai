@@ -1,4 +1,4 @@
-// src/constants/mockChats.js
+
 export const MOCK_CHATS = [
   { id: "1", title: "Next.js App Router structure", pinned: true },
   { id: "2", title: "Explain MongoDB indexes", pinned: false },

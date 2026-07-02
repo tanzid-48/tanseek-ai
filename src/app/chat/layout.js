@@ -1,4 +1,4 @@
-// src/app/chat/layout.js
+
 import Sidebar from "@/components/shared/Sidebar";
 
 export default function ChatLayout({ children }) {
