@@ -204,14 +204,11 @@ Logo, favicon, Tailwind theme tokens, fonts wired into `layout.js`.
 BetterAuth + MongoDB, email/password + Google OAuth, login/signup UI,
 `proxy.js` route protection, session helpers.
 
-### ⬜ Phase 2 — Chat UI Layout
+### ✅ Phase 2 — Chat UI Layout (done)
 
-- Sidebar: chat list (static/mock first), new chat button, search input, collapse toggle
-- Sidebar bottom: user avatar (photo if set via `avatarUrl`, else initials fallback like
-  "MT") + dropdown menu (Settings, Logout) — same pattern as claude.ai's sidebar
-- Topbar: model indicator, settings/profile menu
-- Main chat window shell: empty state, message list container, input bar
-- Fully responsive (mobile drawer sidebar, desktop persistent sidebar)
+Sidebar (expanded default, collapse toggle, mobile drawer via context), sidebar bottom
+user avatar + dropdown, Topbar, chat window shell with centered input on empty state
+(ChatGPT-style) shifting to bottom once a conversation starts.
 
 ### ⬜ Phase 3 — AI Chat Engine
 
@@ -231,6 +228,7 @@ BetterAuth + MongoDB, email/password + Google OAuth, login/signup UI,
 
 - Settings page (account info, theme, sign out)
 - Dark mode toggle (dark-first, light optional)
+- Persist sidebar collapse state in localStorage (currently resets on refresh)
 - Empty states, error states, skeleton loaders
 - Final Framer Motion polish (page transitions, message entrance)
 

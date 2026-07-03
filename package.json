@@ -9,7 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^4.0.7",
     "@better-auth/mongo-adapter": "^1.6.23",
+    "ai": "^7.0.14",
     "better-auth": "^1.6.23",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.23.0",
