@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -11,12 +10,13 @@ import {
   Search,
   Pin,
   MessageSquare,
+  X,
 } from "lucide-react";
 import { assets } from "@/assets/assets";
 import { MOCK_CHATS } from "@/constants/mockChats";
 import UserMenu from "./UserMenu";
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen, onCloseMobile }) {
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -26,28 +26,7 @@ export default function Sidebar() {
   const pinnedChats = filteredChats.filter((c) => c.pinned);
   const otherChats = filteredChats.filter((c) => !c.pinned);
 
-  if (collapsed) {
-    return (
-      <div className="flex h-full w-16 flex-col items-center gap-3 border-r border-border bg-surface py-4">
-        <button
-          onClick={() => setCollapsed(false)}
-          className="rounded-md p-2 text-muted hover:bg-background hover:text-text transition-colors"
-          aria-label="Expand sidebar"
-        >
-          <PanelLeftOpen size={20} />
-        </button>
-        <Link
-          href="/chat"
-          className="rounded-md p-2 text-muted hover:bg-background hover:text-text transition-colors"
-          aria-label="New chat"
-        >
-          <SquarePen size={20} />
-        </Link>
-      </div>
-    );
-  }
-
-  return (
+  const sidebarContent = (
     <div className="flex h-full w-64 flex-col border-r border-border bg-surface">
       <div className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-2">
@@ -65,8 +44,15 @@ export default function Sidebar() {
           />
         </div>
         <button
+          onClick={onCloseMobile}
+          className="rounded-md p-1.5 text-muted hover:bg-background hover:text-text transition-colors md:hidden"
+          aria-label="Close sidebar"
+        >
+          <X size={18} />
+        </button>
+        <button
           onClick={() => setCollapsed(true)}
-          className="rounded-md p-1.5 text-muted hover:bg-background hover:text-text transition-colors"
+          className="hidden rounded-md p-1.5 text-muted hover:bg-background hover:text-text transition-colors md:block"
           aria-label="Collapse sidebar"
         >
           <PanelLeftClose size={18} />
@@ -76,6 +62,7 @@ export default function Sidebar() {
       <div className="px-3">
         <Link
           href="/chat"
+          onClick={onCloseMobile}
           className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-text hover:bg-background transition-colors"
         >
           <SquarePen size={16} />
@@ -99,13 +86,13 @@ export default function Sidebar() {
         {pinnedChats.length > 0 && (
           <>
             <p className="px-2 pb-1 text-xs font-medium text-muted">Pinned</p>
-            <ChatListGroup chats={pinnedChats} />
+            <ChatListGroup chats={pinnedChats} onNavigate={onCloseMobile} />
           </>
         )}
 
         <p className="px-2 pb-1 pt-3 text-xs font-medium text-muted">Recent</p>
         {otherChats.length > 0 ? (
-          <ChatListGroup chats={otherChats} />
+          <ChatListGroup chats={otherChats} onNavigate={onCloseMobile} />
         ) : (
           <p className="px-2 py-2 text-sm text-muted">No chats found.</p>
         )}
@@ -116,15 +103,56 @@ export default function Sidebar() {
       </div>
     </div>
   );
+
+  if (collapsed) {
+    return (
+      <div className="hidden h-full w-16 flex-col items-center gap-3 border-r border-border bg-surface py-4 md:flex">
+        <button
+          onClick={() => setCollapsed(false)}
+          className="rounded-md p-2 text-muted hover:bg-background hover:text-text transition-colors"
+          aria-label="Expand sidebar"
+        >
+          <PanelLeftOpen size={20} />
+        </button>
+        <Link
+          href="/chat"
+          className="rounded-md p-2 text-muted hover:bg-background hover:text-text transition-colors"
+          aria-label="New chat"
+        >
+          <SquarePen size={20} />
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Desktop persistent sidebar */}
+      <div className="hidden h-full md:flex">{sidebarContent}</div>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={onCloseMobile}
+            aria-hidden="true"
+          />
+          <div className="relative z-10 h-full">{sidebarContent}</div>
+        </div>
+      )}
+    </>
+  );
 }
 
-function ChatListGroup({ chats }) {
+function ChatListGroup({ chats, onNavigate }) {
   return (
     <div className="flex flex-col gap-0.5 pb-2">
       {chats.map((chat) => (
         <Link
           key={chat.id}
           href={`/chat/${chat.id}`}
+          onClick={onNavigate}
           className="group flex items-center gap-2 rounded-md px-2 py-2 text-sm text-text hover:bg-background transition-colors"
         >
           {chat.pinned ? (

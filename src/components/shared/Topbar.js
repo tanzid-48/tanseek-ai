@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { Menu, Settings } from "lucide-react";
+import { useSidebar } from "@/providers/SidebarProvider";
 
-export default function Topbar({ title = "New chat", onMenuClick }) {
+export default function Topbar({ title = "New chat" }) {
+  const { openMobile } = useSidebar();
+
   return (
     <div className="flex h-14 items-center justify-between border-b border-border px-4">
       <div className="flex items-center gap-3">
         <button
-          onClick={onMenuClick}
+          onClick={openMobile}
           className="rounded-md p-1.5 text-muted hover:bg-surface hover:text-text transition-colors md:hidden"
           aria-label="Open sidebar"
         >
