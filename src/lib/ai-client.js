@@ -5,4 +5,4 @@ export const aiProvider = createOpenAI({
   baseURL: process.env.AI_BASE_URL,
 });
 
-export const chatModel = aiProvider(process.env.AI_MODEL);
+export const chatModel = aiProvider.chat(process.env.AI_MODEL);

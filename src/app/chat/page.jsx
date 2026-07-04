@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import Topbar from "@/components/shared/Topbar";
 import EmptyState from "@/components/chat/EmptyState";
 import ChatInput from "@/components/chat/ChatInput";
+import MessageBubble from "@/components/chat/MessageBubble";
+import { useChat } from "@/hooks/useChat";
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState([]);
+  const { messages, isStreaming, sendMessage, stopGeneration } = useChat();
+  const bottomRef = useRef(null);
 
-  const handleSend = (text) => {
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
-    // AI streaming wired in Phase 3
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleRegenerate = () => {
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    if (lastUser) sendMessage(lastUser.content);
   };
 
   const hasMessages = messages.length > 0;
@@ -24,18 +31,31 @@ export default function ChatPage() {
           <div className="flex-1 overflow-y-auto">
             <div className="mx-auto max-w-3xl px-4 py-6">
               {messages.map((m, i) => (
-                <div key={i} className="mb-4 text-sm text-text">
-                  <span className="font-medium text-muted">You: </span>
-                  {m.content}
-                </div>
+                <MessageBubble
+                  key={i}
+                  role={m.role}
+                  content={m.content}
+                  isLast={i === messages.length - 1}
+                  isStreaming={isStreaming}
+                  onRegenerate={handleRegenerate}
+                />
               ))}
+              <div ref={bottomRef} />
             </div>
           </div>
-          <ChatInput onSend={handleSend} />
+          <ChatInput
+            onSend={sendMessage}
+            onStop={stopGeneration}
+            isStreaming={isStreaming}
+          />
         </>
       ) : (
         <EmptyState>
-          <ChatInput onSend={handleSend} />
+          <ChatInput
+            onSend={sendMessage}
+            onStop={stopGeneration}
+            isStreaming={isStreaming}
+          />
         </EmptyState>
       )}
     </div>

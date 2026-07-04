@@ -1,4 +1,3 @@
-
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
@@ -11,6 +10,7 @@ export const auth = betterAuth({
 
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: [process.env.BETTER_AUTH_URL],
 
   emailAndPassword: {
     enabled: true,
@@ -26,13 +26,14 @@ export const auth = betterAuth({
   },
 
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // refresh once a day
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
+    cookieCache: {
+      enabled: false,
+    },
   },
 
   user: {
-    additionalFields: {
-      // Add custom fields here later if needed (e.g. avatarUrl, plan)
-    },
+    additionalFields: {},
   },
 });

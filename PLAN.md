@@ -210,12 +210,11 @@ Sidebar (expanded default, collapse toggle, mobile drawer via context), sidebar 
 user avatar + dropdown, Topbar, chat window shell with centered input on empty state
 (ChatGPT-style) shifting to bottom once a conversation starts.
 
-### ⬜ Phase 3 — AI Chat Engine
+### ✅ Phase 3 — AI Chat Engine (done)
 
-- Wire `/api/chat` + Groq streaming
-- Markdown rendering + code syntax highlight (Geist Mono)
-- Copy message, Regenerate, Stop generation (AbortController)
-- Auto-scroll, loading/typing indicator
+Groq streaming via chat completions endpoint, markdown + syntax-highlighted code blocks
+with copy button, regenerate, stop generation, MongoDB persistence for chats/messages,
+`/chat/[chatId]` to load and continue existing conversations.
 
 ### ⬜ Phase 4 — Chat History Management
 

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Square } from "lucide-react";
 
-export default function ChatInput({ onSend, disabled }) {
+export default function ChatInput({ onSend, onStop, isStreaming }) {
   const [value, setValue] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!value.trim() || disabled) return;
+    if (!value.trim() || isStreaming) return;
     onSend?.(value.trim());
     setValue("");
   };
@@ -34,14 +34,25 @@ export default function ChatInput({ onSend, disabled }) {
           rows={1}
           className="max-h-40 flex-1 resize-none bg-transparent text-sm text-text placeholder:text-muted outline-none"
         />
-        <button
-          type="submit"
-          disabled={!value.trim() || disabled}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-text disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
-          aria-label="Send message"
-        >
-          <ArrowUp size={16} />
-        </button>
+        {isStreaming ? (
+          <button
+            type="button"
+            onClick={onStop}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-text text-background transition-opacity"
+            aria-label="Stop generating"
+          >
+            <Square size={14} fill="currentColor" />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={!value.trim()}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-text disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+            aria-label="Send message"
+          >
+            <ArrowUp size={16} />
+          </button>
+        )}
       </div>
     </form>
   );
