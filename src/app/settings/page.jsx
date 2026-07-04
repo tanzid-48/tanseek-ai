@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Menu, LogOut } from "lucide-react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useSidebar } from "@/providers/SidebarProvider";
+import { useTheme } from "next-themes";
 
 function getInitials(name) {
   if (!name) return "U";
@@ -17,6 +18,7 @@ function getInitials(name) {
 }
 
 export default function SettingsPage() {
+  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const { data: session } = useSession();
   const { openMobile } = useSidebar();
@@ -70,6 +72,24 @@ export default function SettingsPage() {
             </p>
             <p className="text-sm text-muted">{user?.email || "—"}</p>
           </div>
+        </div>
+      </div>
+      <div className="mt-4 rounded-xl border border-border bg-surface p-6">
+        <h2 className="mb-4 text-sm font-medium text-muted">Appearance</h2>
+        <div className="flex gap-2">
+          {["light", "dark", "system"].map((option) => (
+            <button
+              key={option}
+              onClick={() => setTheme(option)}
+              className={`rounded-md border px-4 py-2 text-sm capitalize transition-colors ${
+                theme === option
+                  ? "border-primary bg-primary text-text"
+                  : "border-border text-muted hover:bg-background"
+              }`}
+            >
+              {option}
+            </button>
+          ))}
         </div>
       </div>
 
