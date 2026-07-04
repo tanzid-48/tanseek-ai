@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { emitChatsChanged } from "@/lib/events";
 
 export function useChat(initialChatId = null, initialMessages = []) {
   const router = useRouter();
@@ -37,6 +38,7 @@ export function useChat(initialChatId = null, initialMessages = []) {
         }
 
         const newChatId = res.headers.get("X-Chat-Id");
+        const isNewChat = res.headers.get("X-Is-New-Chat") === "true";
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
@@ -61,6 +63,14 @@ export function useChat(initialChatId = null, initialMessages = []) {
         if (newChatId && newChatId !== chatId) {
           setChatId(newChatId);
           router.replace(`/chat/${newChatId}`);
+        }
+
+        // Refresh sidebar list: covers new chat creation, updatedAt reorder,
+        // and the auto-generated title landing shortly after (small delay
+        // since title generation happens server-side after this response ends)
+        emitChatsChanged();
+        if (isNewChat) {
+          setTimeout(emitChatsChanged, 1500);
         }
       } catch (err) {
         if (err.name !== "AbortError") {

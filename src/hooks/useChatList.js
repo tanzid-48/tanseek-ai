@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { onChatsChanged } from "@/lib/events";
 
 export function useChatList() {
   const [chats, setChats] = useState([]);
@@ -19,6 +20,7 @@ export function useChatList() {
 
   useEffect(() => {
     refresh();
+    return onChatsChanged(refresh);
   }, [refresh]);
 
   const renameChat = useCallback(async (chatId, title) => {
