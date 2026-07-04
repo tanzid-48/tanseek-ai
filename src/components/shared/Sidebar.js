@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -15,10 +15,22 @@ import { useChatList } from "@/hooks/useChatList";
 import ChatListItem from "./ChatListItem";
 import UserMenu from "./UserMenu";
 
+const COLLAPSE_KEY = "tanseek:sidebar-collapsed";
+
 export default function Sidebar({ mobileOpen, onCloseMobile }) {
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState("");
   const { chats, loading, renameChat, togglePin, removeChat } = useChatList();
+
+  useEffect(() => {
+    const saved = localStorage.getItem(COLLAPSE_KEY);
+    if (saved === "true") setCollapsed(true);
+  }, []);
+
+  const handleCollapse = (value) => {
+    setCollapsed(value);
+    localStorage.setItem(COLLAPSE_KEY, String(value));
+  };
 
   const filteredChats = chats.filter((c) =>
     c.title.toLowerCase().includes(query.toLowerCase()),
@@ -41,6 +53,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
             alt="TanSeek AI"
             width={100}
             height={20}
+            style={{ height: "auto" }}
           />
         </div>
         <button
@@ -51,7 +64,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
           <X size={18} />
         </button>
         <button
-          onClick={() => setCollapsed(true)}
+          onClick={() => handleCollapse(true)}
           className="hidden rounded-md p-1.5 text-muted hover:bg-background hover:text-text transition-colors md:block"
           aria-label="Collapse sidebar"
         >
@@ -136,31 +149,34 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
     </div>
   );
 
-  if (collapsed) {
-    return (
-      <div className="hidden h-full w-16 flex-col items-center gap-3 border-r border-border bg-surface py-4 md:flex">
-        <button
-          onClick={() => setCollapsed(false)}
-          className="rounded-md p-2 text-muted hover:bg-background hover:text-text transition-colors"
-          aria-label="Expand sidebar"
-        >
-          <PanelLeftOpen size={20} />
-        </button>
-        <Link
-          href="/chat"
-          className="rounded-md p-2 text-muted hover:bg-background hover:text-text transition-colors"
-          aria-label="New chat"
-        >
-          <SquarePen size={20} />
-        </Link>
-      </div>
-    );
-  }
+  const collapsedRail = (
+    <div className="hidden h-full w-16 flex-col items-center gap-3 border-r border-border bg-surface py-4 md:flex">
+      <button
+        onClick={() => handleCollapse(false)}
+        className="rounded-md p-2 text-muted hover:bg-background hover:text-text transition-colors"
+        aria-label="Expand sidebar"
+      >
+        <PanelLeftOpen size={20} />
+      </button>
+      <Link
+        href="/chat"
+        className="rounded-md p-2 text-muted hover:bg-background hover:text-text transition-colors"
+        aria-label="New chat"
+      >
+        <SquarePen size={20} />
+      </Link>
+    </div>
+  );
 
   return (
     <>
-      <div className="hidden h-full md:flex">{sidebarContent}</div>
+      {/* Desktop: collapsed rail or full sidebar, controlled by `collapsed` */}
+      <div className="hidden h-full md:flex">
+        {collapsed ? collapsedRail : sidebarContent}
+      </div>
 
+      {/* Mobile drawer: always uses full sidebarContent, independent of
+          the desktop collapsed state */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div
