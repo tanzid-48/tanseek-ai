@@ -8,18 +8,17 @@ import {
   PanelLeftOpen,
   SquarePen,
   Search,
-  Pin,
-  MessageSquare,
   X,
 } from "lucide-react";
 import { assets } from "@/assets/assets";
 import { useChatList } from "@/hooks/useChatList";
+import ChatListItem from "./ChatListItem";
 import UserMenu from "./UserMenu";
 
 export default function Sidebar({ mobileOpen, onCloseMobile }) {
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState("");
-  const { chats, loading } = useChatList();
+  const { chats, loading, renameChat, togglePin, removeChat } = useChatList();
 
   const filteredChats = chats.filter((c) =>
     c.title.toLowerCase().includes(query.toLowerCase()),
@@ -93,7 +92,18 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
                 <p className="px-2 pb-1 text-xs font-medium text-muted">
                   Pinned
                 </p>
-                <ChatListGroup chats={pinnedChats} onNavigate={onCloseMobile} />
+                <div className="flex flex-col gap-0.5 pb-2">
+                  {pinnedChats.map((chat) => (
+                    <ChatListItem
+                      key={chat.id}
+                      chat={chat}
+                      onNavigate={onCloseMobile}
+                      onRename={renameChat}
+                      onTogglePin={togglePin}
+                      onDelete={removeChat}
+                    />
+                  ))}
+                </div>
               </>
             )}
 
@@ -101,7 +111,18 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
               Recent
             </p>
             {otherChats.length > 0 ? (
-              <ChatListGroup chats={otherChats} onNavigate={onCloseMobile} />
+              <div className="flex flex-col gap-0.5 pb-2">
+                {otherChats.map((chat) => (
+                  <ChatListItem
+                    key={chat.id}
+                    chat={chat}
+                    onNavigate={onCloseMobile}
+                    onRename={renameChat}
+                    onTogglePin={togglePin}
+                    onDelete={removeChat}
+                  />
+                ))}
+              </div>
             ) : (
               <p className="px-2 py-2 text-sm text-muted">No chats yet.</p>
             )}
@@ -151,27 +172,5 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
         </div>
       )}
     </>
-  );
-}
-
-function ChatListGroup({ chats, onNavigate }) {
-  return (
-    <div className="flex flex-col gap-0.5 pb-2">
-      {chats.map((chat) => (
-        <Link
-          key={chat.id}
-          href={`/chat/${chat.id}`}
-          onClick={onNavigate}
-          className="group flex items-center gap-2 rounded-md px-2 py-2 text-sm text-text hover:bg-background transition-colors"
-        >
-          {chat.pinned ? (
-            <Pin size={14} className="shrink-0 text-muted" />
-          ) : (
-            <MessageSquare size={14} className="shrink-0 text-muted" />
-          )}
-          <span className="truncate">{chat.title}</span>
-        </Link>
-      ))}
-    </div>
   );
 }
