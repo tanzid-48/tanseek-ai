@@ -216,12 +216,11 @@ Groq streaming via chat completions endpoint, markdown + syntax-highlighted code
 with copy button, regenerate, stop generation, MongoDB persistence for chats/messages,
 `/chat/[chatId]` to load and continue existing conversations.
 
-### ⬜ Phase 4 — Chat History Management
+### ✅ Phase 4 — Chat History Management (done)
 
-- Wire `/api/chats` CRUD into sidebar (real data)
-- Rename chat (inline edit), Delete (confirm), Pin
-- Search across chat history
-- Auto-generate chat title from first message
+Sidebar wired to real DB chat list, rename/pin/delete via hover menu, client-side
+search filter, AI-generated auto-titles with live sidebar refresh via a lightweight
+window event bus.
 
 ### ⬜ Phase 5 — Settings & Polish
 
