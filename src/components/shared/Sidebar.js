@@ -13,14 +13,15 @@ import {
   X,
 } from "lucide-react";
 import { assets } from "@/assets/assets";
-import { MOCK_CHATS } from "@/constants/mockChats";
+import { useChatList } from "@/hooks/useChatList";
 import UserMenu from "./UserMenu";
 
 export default function Sidebar({ mobileOpen, onCloseMobile }) {
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState("");
+  const { chats, loading } = useChatList();
 
-  const filteredChats = MOCK_CHATS.filter((c) =>
+  const filteredChats = chats.filter((c) =>
     c.title.toLowerCase().includes(query.toLowerCase()),
   );
   const pinnedChats = filteredChats.filter((c) => c.pinned);
@@ -83,18 +84,28 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 pt-4">
-        {pinnedChats.length > 0 && (
-          <>
-            <p className="px-2 pb-1 text-xs font-medium text-muted">Pinned</p>
-            <ChatListGroup chats={pinnedChats} onNavigate={onCloseMobile} />
-          </>
-        )}
-
-        <p className="px-2 pb-1 pt-3 text-xs font-medium text-muted">Recent</p>
-        {otherChats.length > 0 ? (
-          <ChatListGroup chats={otherChats} onNavigate={onCloseMobile} />
+        {loading ? (
+          <p className="px-2 py-2 text-sm text-muted">Loading...</p>
         ) : (
-          <p className="px-2 py-2 text-sm text-muted">No chats found.</p>
+          <>
+            {pinnedChats.length > 0 && (
+              <>
+                <p className="px-2 pb-1 text-xs font-medium text-muted">
+                  Pinned
+                </p>
+                <ChatListGroup chats={pinnedChats} onNavigate={onCloseMobile} />
+              </>
+            )}
+
+            <p className="px-2 pb-1 pt-3 text-xs font-medium text-muted">
+              Recent
+            </p>
+            {otherChats.length > 0 ? (
+              <ChatListGroup chats={otherChats} onNavigate={onCloseMobile} />
+            ) : (
+              <p className="px-2 py-2 text-sm text-muted">No chats yet.</p>
+            )}
+          </>
         )}
       </div>
 
@@ -127,10 +138,8 @@ export default function Sidebar({ mobileOpen, onCloseMobile }) {
 
   return (
     <>
-      {/* Desktop persistent sidebar */}
       <div className="hidden h-full md:flex">{sidebarContent}</div>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div
