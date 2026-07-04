@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Copy, Check, RotateCcw } from "lucide-react";
 import CodeBlock from "./CodeBlock";
+import { motion } from "framer-motion";
 
 // Strip stray single backticks from text OUTSIDE triple-backtick code fences.
 // Splitting on the ``` fence pattern keeps actual code blocks untouched.
@@ -40,17 +41,27 @@ export default function MessageBubble({
 
   if (isUser) {
     return (
-      <div className="mb-6 flex justify-end">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="mb-6 flex justify-end"
+      >
         <div className="max-w-[75%] rounded-xl bg-primary px-4 py-2.5 text-sm text-text">
           {content}
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="mb-6">
-      <div className="prose prose-invert max-w-none text-sm text-text prose-p:my-2 prose-pre:my-0 prose-pre:bg-transparent prose-pre:p-0 prose-table:text-xs prose-th:bg-surface prose-td:border-border prose-th:border-border">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="mb-6"
+    >
+      <div className="prose prose-invert max-w-none text-sm text-text prose-p:my-2 prose-pre:my-0 prose-pre:bg-transparent prose-pre:p-0">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -100,6 +111,6 @@ export default function MessageBubble({
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

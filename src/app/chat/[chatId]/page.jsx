@@ -6,6 +6,7 @@ import Topbar from "@/components/shared/Topbar";
 import MessageBubble from "@/components/chat/MessageBubble";
 import ChatInput from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/useChat";
+import Skeleton from "@/components/ui/Skeleton";
 
 export default function ChatConversationPage() {
   const { chatId } = useParams();
@@ -32,8 +33,12 @@ export default function ChatConversationPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-muted">
-        <p className="text-sm">Loading chat...</p>
+      <div className="flex h-full flex-col">
+        <div className="h-14 border-b border-border" />
+        <div className="mx-auto w-full max-w-3xl px-4 py-6 space-y-4">
+          <Skeleton className="ml-auto h-10 w-2/5" />
+          <Skeleton className="h-24 w-4/5" />
+        </div>
       </div>
     );
   }
