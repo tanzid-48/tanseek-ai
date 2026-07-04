@@ -7,6 +7,7 @@ import MessageBubble from "@/components/chat/MessageBubble";
 import ChatInput from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/useChat";
 import Skeleton from "@/components/ui/Skeleton";
+import Link from "next/link";
 
 export default function ChatConversationPage() {
   const { chatId } = useParams();
@@ -43,13 +44,22 @@ export default function ChatConversationPage() {
     );
   }
 
-  if (notFound) {
-    return (
-      <div className="flex h-full items-center justify-center text-muted">
-        <p className="text-sm">Chat not found.</p>
-      </div>
-    );
-  }
+if (notFound) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
+      <p className="text-base font-medium text-text">Chat not found</p>
+      <p className="max-w-sm text-sm text-muted">
+        This conversation may have been deleted, or you do not have access to it.
+      </p>
+      <Link
+        href="/chat"
+        className="rounded-md border border-border px-4 py-2 text-sm text-text hover:bg-surface transition-colors"
+      >
+        Start a new chat
+      </Link>
+    </div>
+  );
+}
 
   return (
     <ChatConversation
