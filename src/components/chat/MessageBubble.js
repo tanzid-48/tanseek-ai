@@ -1,20 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Copy, Check, RotateCcw } from "lucide-react";
 import CodeBlock from "./CodeBlock";
-import { motion } from "framer-motion";
+import { assets } from "@/assets/assets";
+import TypingIndicator from "./TypingIndicator";
 
-// Strip stray single backticks from text OUTSIDE triple-backtick code fences.
-// Splitting on the ``` fence pattern keeps actual code blocks untouched.
 function cleanBackticks(text) {
   const parts = text.split(/(```[\s\S]*?```)/g);
   return parts
     .map((part) => {
       if (part.startsWith("```")) {
-        return part; // leave fenced code blocks untouched
+        return part;
       }
       return part.replace(/\\`/g, "`").replace(/`/g, "");
     })
@@ -59,58 +60,72 @@ export default function MessageBubble({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="mb-6"
+      className="mb-6 flex gap-3"
     >
-      <div className="prose prose-invert max-w-none text-sm text-text prose-p:my-2 prose-pre:my-0 prose-pre:bg-transparent prose-pre:p-0">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            code({ className, children, ...props }) {
-              const match = /language-(\w+)/.exec(className || "");
-              const codeString = String(children).replace(/\n$/, "");
-              const isInline = !match && !codeString.includes("\n");
-              if (!codeString.trim()) {
-                return null;
-              }
+      <Image
+        src={assets.logo_icon}
+        alt="TanSeek AI"
+        width={24}
+        height={24}
+        className="mt-0.5 shrink-0 rounded-full"
+      />
 
-              if (isInline) {
-                return (
-                  <code
-                    className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs"
-                    {...props}
-                  >
-                    {children}
-                  </code>
-                );
-              }
-              return <CodeBlock language={match?.[1]} value={codeString} />;
-            },
-          }}
-        >
-          {cleanContent || (isStreaming ? "..." : "")}
-        </ReactMarkdown>
-      </div>
+      <div className="min-w-0 flex-1">
+        <div className="prose prose-invert max-w-none text-sm text-text prose-p:my-2 prose-pre:my-0 prose-pre:bg-transparent prose-pre:p-0">
+          {!cleanContent && isStreaming ? (
+            <TypingIndicator />
+          ) : (
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                code({ className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || "");
+                  const codeString = String(children).replace(/\n$/, "");
+                  const isInline = !match && !codeString.includes("\n");
+                  if (!codeString.trim()) {
+                    return null;
+                  }
 
-      {content && !(isLast && isStreaming) && (
-        <div className="mt-1 flex items-center gap-2 text-muted">
-          <button
-            onClick={handleCopy}
-            className="rounded p-1 hover:bg-surface hover:text-text transition-colors"
-            aria-label="Copy"
-          >
-            {copied ? <Check size={14} /> : <Copy size={14} />}
-          </button>
-          {isLast && (
-            <button
-              onClick={onRegenerate}
-              className="rounded p-1 hover:bg-surface hover:text-text transition-colors"
-              aria-label="Regenerate"
+                  if (isInline) {
+                    return (
+                      <code
+                        className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs"
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    );
+                  }
+                  return <CodeBlock language={match?.[1]} value={codeString} />;
+                },
+              }}
             >
-              <RotateCcw size={14} />
-            </button>
+              {cleanContent}
+            </ReactMarkdown>
           )}
         </div>
-      )}
+
+        {content && !(isLast && isStreaming) && (
+          <div className="mt-1 flex items-center gap-2 text-muted">
+            <button
+              onClick={handleCopy}
+              className="rounded p-1 hover:bg-surface hover:text-text transition-colors"
+              aria-label="Copy"
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+            </button>
+            {isLast && (
+              <button
+                onClick={onRegenerate}
+                className="rounded p-1 hover:bg-surface hover:text-text transition-colors"
+                aria-label="Regenerate"
+              >
+                <RotateCcw size={14} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }
