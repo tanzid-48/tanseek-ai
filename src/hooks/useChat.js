@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { emitChatsChanged } from "@/lib/events";
@@ -15,8 +15,6 @@ export function useChat(initialChatId = null, initialMessages = []) {
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef(null);
 
-  // Typewriter buffer: raw text arrives from the network in bursts, but we
-  // reveal it to the UI at a steady pace so it doesn't look "chunky"
   const rawTextRef = useRef("");
   const revealedLengthRef = useRef(0);
   const tickRef = useRef(null);
@@ -50,8 +48,6 @@ export function useChat(initialChatId = null, initialMessages = []) {
     }
   }, []);
 
-  // Flush any remaining buffered text instantly (used when stream ends or
-  // is stopped, so nothing gets left un-displayed)
   const flushTypewriter = useCallback(() => {
     stopTypewriter();
     const raw = rawTextRef.current;
@@ -63,18 +59,10 @@ export function useChat(initialChatId = null, initialMessages = []) {
     });
   }, [stopTypewriter]);
 
-  useEffect(() => stopTypewriter, [stopTypewriter]);
-
-  const sendMessage = useCallback(
+  // Core streaming logic, shared by both sendMessage and editMessage
+  const runStream = useCallback(
     async (text) => {
-      const userMessage = { role: "user", content: text };
-      setMessages((prev) => [
-        ...prev,
-        userMessage,
-        { role: "assistant", content: "" },
-      ]);
       setIsStreaming(true);
-
       rawTextRef.current = "";
       revealedLengthRef.current = 0;
 
@@ -103,6 +91,20 @@ export function useChat(initialChatId = null, initialMessages = []) {
 
         const newChatId = res.headers.get("X-Chat-Id");
         const isNewChat = res.headers.get("X-Is-New-Chat") === "true";
+        const userMessageId = res.headers.get("X-User-Message-Id");
+
+        // Attach the DB id to the user message we just sent, so it can be
+        // edited later without needing a page refresh first
+        if (userMessageId) {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const userIdx = updated.length - 2; // message before the assistant placeholder
+            if (updated[userIdx]) {
+              updated[userIdx] = { ...updated[userIdx], id: userMessageId };
+            }
+            return updated;
+          });
+        }
 
         startTypewriter();
 
@@ -112,7 +114,6 @@ export function useChat(initialChatId = null, initialMessages = []) {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
           rawTextRef.current += decoder.decode(value, { stream: true });
         }
 
@@ -149,9 +150,57 @@ export function useChat(initialChatId = null, initialMessages = []) {
     [chatId, router, startTypewriter, stopTypewriter, flushTypewriter],
   );
 
+  const sendMessage = useCallback(
+    async (text) => {
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: text },
+        { role: "assistant", content: "" },
+      ]);
+      await runStream(text);
+    },
+    [runStream],
+  );
+
+  // Edit a previously-sent user message: removes it + everything after
+  // (both in the DB and locally), then resends the edited text fresh.
+  const editMessage = useCallback(
+    async (index, newText) => {
+      const target = messages[index];
+      if (!target) return;
+
+      if (target.id && chatId) {
+        try {
+          await fetch(`/api/chats/${chatId}/messages/${target.id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+        } catch {
+          // best-effort; continue even if DB cleanup fails
+        }
+      }
+
+      setMessages((prev) => [
+        ...prev.slice(0, index),
+        { role: "user", content: newText },
+        { role: "assistant", content: "" },
+      ]);
+
+      await runStream(newText);
+    },
+    [messages, chatId, runStream],
+  );
+
   const stopGeneration = useCallback(() => {
     abortRef.current?.abort();
   }, []);
 
-  return { messages, isStreaming, sendMessage, stopGeneration, chatId };
+  return {
+    messages,
+    isStreaming,
+    sendMessage,
+    editMessage,
+    stopGeneration,
+    chatId,
+  };
 }

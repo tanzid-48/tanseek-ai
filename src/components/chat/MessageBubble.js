@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, Check, RotateCcw } from "lucide-react";
+import { Copy, Check, RotateCcw, Pencil } from "lucide-react";
 import CodeBlock from "./CodeBlock";
 import TypingIndicator from "./TypingIndicator";
 import { assets } from "@/assets/assets";
@@ -26,10 +26,13 @@ export default function MessageBubble({
   role,
   content,
   onRegenerate,
+  onEdit,
   isLast,
   isStreaming,
 }) {
   const [copied, setCopied] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(content);
   const isUser = role === "user";
 
   const cleanContent = cleanBackticks(content || "");
@@ -41,16 +44,68 @@ export default function MessageBubble({
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const submitEdit = () => {
+    const trimmed = editValue.trim();
+    setEditing(false);
+    if (trimmed && trimmed !== content) {
+      onEdit?.(trimmed);
+    }
+  };
+
   if (isUser) {
+    if (editing) {
+      return (
+        <div className="mb-6 w-full">
+          <div className="ml-auto w-full max-w-[75%] rounded-xl border border-primary bg-surface p-2">
+            <textarea
+              autoFocus
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              rows={3}
+              className="w-full resize-none bg-transparent text-sm text-text outline-none"
+            />
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => {
+                  setEditValue(content);
+                  setEditing(false);
+                }}
+                className="rounded-md px-3 py-1.5 text-xs text-muted hover:bg-background transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitEdit}
+                className="rounded-md bg-primary px-3 py-1.5 text-xs text-text hover:bg-primary-hover transition-colors"
+              >
+                Save & Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="mb-6 w-full"
+        className="group mb-6 w-full"
       >
-        <div className="ml-auto w-fit max-w-[75%] rounded-xl bg-primary px-4 py-2.5 text-sm text-text">
-          {content}
+        <div className="ml-auto flex w-fit max-w-[75%] flex-col items-end gap-1">
+          <div className="rounded-xl bg-primary px-4 py-2.5 text-sm text-text">
+            {content}
+          </div>
+          {onEdit && !isStreaming && (
+            <button
+              onClick={() => setEditing(true)}
+              className="rounded p-1 text-muted opacity-0 transition-opacity hover:bg-surface hover:text-text group-hover:opacity-100"
+              aria-label="Edit message"
+            >
+              <Pencil size={13} />
+            </button>
+          )}
         </div>
       </motion.div>
     );
@@ -75,14 +130,10 @@ export default function MessageBubble({
         {!cleanContent && isStreaming ? (
           <TypingIndicator />
         ) : isActivelyStreaming ? (
-          // While actively streaming: render plain text (no markdown parsing)
-          // to avoid jarring layout shifts from incomplete syntax (headers,
-          // code fences) popping in and out as more text arrives.
           <div className="whitespace-pre-wrap text-sm text-text">
             {cleanContent}
           </div>
         ) : (
-          // Once streaming is done: render full markdown in one clean pass
           <div className="prose prose-invert max-w-none text-sm text-text prose-p:my-2 prose-pre:my-0 prose-pre:bg-transparent prose-pre:p-0">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
@@ -94,7 +145,6 @@ export default function MessageBubble({
                   if (!codeString.trim()) {
                     return null;
                   }
-
                   if (isInline) {
                     return (
                       <code
@@ -105,9 +155,6 @@ export default function MessageBubble({
                       </code>
                     );
                   }
-
-                  // Model sometimes wraps actual markdown tables in a ```markdown fence.
-                  // Detect that and render it as real markdown instead of a code block.
                   if (match?.[1] === "markdown") {
                     return (
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -115,7 +162,6 @@ export default function MessageBubble({
                       </ReactMarkdown>
                     );
                   }
-
                   return <CodeBlock language={match?.[1]} value={codeString} />;
                 },
               }}

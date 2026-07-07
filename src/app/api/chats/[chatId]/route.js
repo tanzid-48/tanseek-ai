@@ -23,7 +23,11 @@ export async function GET(req, { params }) {
 
   return Response.json({
     chat: { id: chat._id.toString(), title: chat.title },
-    messages: messages.map((m) => ({ role: m.role, content: m.content })),
+    messages: messages.map((m) => ({
+      id: m._id.toString(),
+      role: m.role,
+      content: m.content,
+    })),
   });
 }
 

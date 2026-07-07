@@ -59,6 +59,12 @@ export async function POST(req) {
     role: "user",
     content: message,
   });
+  const savedUserMessage = await addMessage({
+    chatId: activeChatId,
+    userId,
+    role: "user",
+    content: message,
+  });
 
   const history = await getMessagesByChat(activeChatId);
   const recent = history
@@ -88,6 +94,10 @@ export async function POST(req) {
 
   return createTextStreamResponse({
     stream: result.textStream,
-    headers: { "X-Chat-Id": activeChatId, "X-Is-New-Chat": String(isNewChat) },
+    headers: {
+      "X-Chat-Id": activeChatId,
+      "X-Is-New-Chat": String(isNewChat),
+      "X-User-Message-Id": savedUserMessage._id.toString(),
+    },
   });
 }

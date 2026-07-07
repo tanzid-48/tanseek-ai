@@ -28,3 +28,16 @@ export async function getMessagesByChat(chatId) {
     .sort({ createdAt: 1 })
     .toArray();
 }
+
+export async function deleteMessagesFrom(chatId, fromDate) {
+  const db = await getDb();
+  await db.collection("messages").deleteMany({
+    chatId: new ObjectId(chatId),
+    createdAt: { $gte: fromDate },
+  });
+}
+
+export async function getMessageById(messageId) {
+  const db = await getDb();
+  return db.collection("messages").findOne({ _id: new ObjectId(messageId) });
+}

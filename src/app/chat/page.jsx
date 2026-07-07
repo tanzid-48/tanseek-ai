@@ -8,7 +8,7 @@ import MessageBubble from "@/components/chat/MessageBubble";
 import { useChat } from "@/hooks/useChat";
 
 export default function ChatPage() {
-  const { messages, isStreaming, sendMessage, stopGeneration } = useChat();
+  const { messages, isStreaming, sendMessage, stopGeneration, editMessage } = useChat();
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -38,6 +38,11 @@ export default function ChatPage() {
                   isLast={i === messages.length - 1}
                   isStreaming={isStreaming}
                   onRegenerate={handleRegenerate}
+                  onEdit={
+                    m.role === "user"
+                      ? (newText) => editMessage(i, newText)
+                      : undefined
+                  }
                 />
               ))}
               <div ref={bottomRef} />

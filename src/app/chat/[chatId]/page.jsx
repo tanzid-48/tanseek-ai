@@ -44,22 +44,23 @@ export default function ChatConversationPage() {
     );
   }
 
-if (notFound) {
-  return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
-      <p className="text-base font-medium text-text">Chat not found</p>
-      <p className="max-w-sm text-sm text-muted">
-        This conversation may have been deleted, or you do not have access to it.
-      </p>
-      <Link
-        href="/chat"
-        className="rounded-md border border-border px-4 py-2 text-sm text-text hover:bg-surface transition-colors"
-      >
-        Start a new chat
-      </Link>
-    </div>
-  );
-}
+  if (notFound) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="text-base font-medium text-text">Chat not found</p>
+        <p className="max-w-sm text-sm text-muted">
+          This conversation may have been deleted, or you do not have access to
+          it.
+        </p>
+        <Link
+          href="/chat"
+          className="rounded-md border border-border px-4 py-2 text-sm text-text hover:bg-surface transition-colors"
+        >
+          Start a new chat
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <ChatConversation
@@ -71,10 +72,8 @@ if (notFound) {
 }
 
 function ChatConversation({ chatId, title, initialMessages }) {
-  const { messages, isStreaming, sendMessage, stopGeneration } = useChat(
-    chatId,
-    initialMessages,
-  );
+  const { messages, isStreaming, sendMessage, stopGeneration, editMessage } =
+    useChat(chatId, initialMessages);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -99,6 +98,11 @@ function ChatConversation({ chatId, title, initialMessages }) {
               isLast={i === messages.length - 1}
               isStreaming={isStreaming}
               onRegenerate={handleRegenerate}
+              onEdit={
+                m.role === "user"
+                  ? (newText) => editMessage(i, newText)
+                  : undefined
+              }
             />
           ))}
           <div ref={bottomRef} />
