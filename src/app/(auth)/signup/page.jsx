@@ -10,7 +10,6 @@ import GoogleButton from "@/components/auth/GoogleButton";
 import AuthInput from "@/components/auth/AuthInput";
 import AuthButton from "@/components/auth/AuthButton";
 
-
 export default function SignupPage() {
   const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -38,7 +37,7 @@ export default function SignupPage() {
     }
 
     toast.success("Account created!");
-    router.push("/login");
+    router.push("/chat");
   };
 
   const handleGoogleSignIn = async () => {

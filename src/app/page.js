@@ -1,10 +1,13 @@
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
 
-
-  return (
-    <>
-    <h1>Welcome to TanSeek</h1>
-    </>
-  );
+  if (session) {
+    redirect("/chat");
+  } else {
+    redirect("/login");
+  }
 }

@@ -7,8 +7,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Copy, Check, RotateCcw } from "lucide-react";
 import CodeBlock from "./CodeBlock";
-import { assets } from "@/assets/assets";
 import TypingIndicator from "./TypingIndicator";
+import { assets } from "@/assets/assets";
 
 function cleanBackticks(text) {
   const parts = text.split(/(```[\s\S]*?```)/g);
@@ -33,6 +33,7 @@ export default function MessageBubble({
   const isUser = role === "user";
 
   const cleanContent = cleanBackticks(content || "");
+  const isActivelyStreaming = isLast && isStreaming;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
@@ -46,9 +47,9 @@ export default function MessageBubble({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="mb-6 flex justify-end"
+        className="mb-6 w-full"
       >
-        <div className="max-w-[75%] rounded-xl bg-primary px-4 py-2.5 text-sm text-text">
+        <div className="ml-auto w-fit max-w-[75%] rounded-xl bg-primary px-4 py-2.5 text-sm text-text">
           {content}
         </div>
       </motion.div>
@@ -60,7 +61,7 @@ export default function MessageBubble({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="mb-6 flex gap-3"
+      className="mb-6 flex items-start gap-3"
     >
       <Image
         src={assets.logo_icon}
@@ -71,10 +72,18 @@ export default function MessageBubble({
       />
 
       <div className="min-w-0 flex-1">
-        <div className="prose prose-invert max-w-none text-sm text-text prose-p:my-2 prose-pre:my-0 prose-pre:bg-transparent prose-pre:p-0">
-          {!cleanContent && isStreaming ? (
-            <TypingIndicator />
-          ) : (
+        {!cleanContent && isStreaming ? (
+          <TypingIndicator />
+        ) : isActivelyStreaming ? (
+          // While actively streaming: render plain text (no markdown parsing)
+          // to avoid jarring layout shifts from incomplete syntax (headers,
+          // code fences) popping in and out as more text arrives.
+          <div className="whitespace-pre-wrap text-sm text-text">
+            {cleanContent}
+          </div>
+        ) : (
+          // Once streaming is done: render full markdown in one clean pass
+          <div className="prose prose-invert max-w-none text-sm text-text prose-p:my-2 prose-pre:my-0 prose-pre:bg-transparent prose-pre:p-0">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -96,16 +105,27 @@ export default function MessageBubble({
                       </code>
                     );
                   }
+
+                  // Model sometimes wraps actual markdown tables in a ```markdown fence.
+                  // Detect that and render it as real markdown instead of a code block.
+                  if (match?.[1] === "markdown") {
+                    return (
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {codeString}
+                      </ReactMarkdown>
+                    );
+                  }
+
                   return <CodeBlock language={match?.[1]} value={codeString} />;
                 },
               }}
             >
               {cleanContent}
             </ReactMarkdown>
-          )}
-        </div>
+          </div>
+        )}
 
-        {content && !(isLast && isStreaming) && (
+        {content && !isActivelyStreaming && (
           <div className="mt-1 flex items-center gap-2 text-muted">
             <button
               onClick={handleCopy}
